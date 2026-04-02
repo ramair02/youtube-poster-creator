@@ -51,11 +51,20 @@ export async function POST(req: NextRequest) {
       You are a branding expert and prompt engineer. Analyze the provided images (avatar, banner, video thumbnails) and text for this YouTube channel.
       Channel Title: ${channelTitle || 'N/A'}
       Channel Description: ${channelDescription || 'N/A'}
+      URL: youtube.com/@${channelTitle ? channelTitle.replace(/\s+/g, '') : 'handle'}
       
       Extract the following information:
       1. 'primary_colors': A list of up to 3 hex color codes representing the channel's main brand colors.
       2. 'aesthetic': A short 2-3 word phrase describing the visual style (e.g., "Neon Retro Gaming", "Clean Tech Minimalist").
-      3. 'image_prompt': A highly detailed, well-crafted Stable Diffusion text prompt for generating a 2:3 aspect ratio cinematic poster combining the channel's topic and aesthetic. DO NOT include any references to aspect ratio or resolution within the prompt text itself, just describe the visual composition in detail.
+      3. 'image_prompt': A highly detailed, structured text-to-image prompt for the Imagen 4 model. 
+         
+         CRITICAL STRUCTURAL LAYOUT RULES (YOU MUST FOLLOW THIS EXACT BLOCK STRUCTURE):
+         - Top Section: The exact text "${channelTitle}" written in a massive, bold, cinematic 3D font at the very top.
+         - Center Background: A stunning, photorealistic background relevant to the channel's topic and aesthetic.
+         - Center Foreground: Thematic icons, tools, or adornments floating or framed around the center.
+         - Bottom Section: A concise 3-word tagline describing the channel (e.g. "REVIEWS. DRIVING. UNBOXING."), followed immediately under it by the exact text "youtube.com/@${channelTitle ? channelTitle.replace(/\s+/g, '') : 'channel'}".
+         
+         Do NOT repeat the channel title anywhere else in the poster. Ensure the layout matches a clean, premium, split-pane graphic design poster. Describe the cinematic lighting and aesthetic explicitly.
     `;
 
     const contents = [
