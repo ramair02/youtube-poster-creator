@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
       3. 'image_prompt': A highly detailed, structured text-to-image prompt for the Imagen 4 model. 
          
          CRITICAL STRUCTURAL LAYOUT RULES (YOU MUST FOLLOW THIS EXACT BLOCK STRUCTURE):
-         - Top Section: The exact text "${channelTitle}" written in a massive, bold, cinematic 3D font at the very top.
+         - Top Section: The exact text "${channelTitle}" written in a clean, modern, high-end sans-serif typography at the very top. DO NOT use reflections, 3D bevels, or 'WordArt' style effects. The text should look like a premium editorial magazine header.
          - Center Background: A stunning, photorealistic background relevant to the channel's topic and aesthetic.
          - Center Foreground: Thematic icons, tools, or adornments floating or framed around the center.
          - Bottom Section: A concise 3-word tagline describing the channel (e.g. "REVIEWS. DRIVING. UNBOXING."), followed immediately under it by the exact text "youtube.com/@${channelTitle ? channelTitle.replace(/\s+/g, '') : 'channel'}".
