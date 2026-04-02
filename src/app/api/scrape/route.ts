@@ -49,6 +49,7 @@ export async function POST(req: NextRequest) {
         channelDescription: "This is a mock channel description used because the YouTube API key is missing.",
         avatarUrl: "https://placehold.co/400x400/png?text=Avatar",
         bannerUrl: "https://placehold.co/1080x175/png?text=Banner",
+        customUrl: "@mockchannel",
         videoThumbnails: [
           "https://placehold.co/1280x720/png?text=Video+1",
           "https://placehold.co/1280x720/png?text=Video+2",
@@ -100,6 +101,7 @@ export async function POST(req: NextRequest) {
       channelDescription: channel.snippet?.description,
       avatarUrl: channel.snippet?.thumbnails?.high?.url,
       bannerUrl: channel.brandingSettings?.image?.bannerExternalUrl,
+      customUrl: channel.snippet?.customUrl,
       videoThumbnails
     });
   } catch (error: any) {

@@ -22,7 +22,7 @@ async function fetchImageAsBase64(url: string) {
 export async function POST(req: NextRequest) {
   try {
     const data = await req.json();
-    const { channelTitle, channelDescription, avatarUrl, bannerUrl, videoThumbnails } = data;
+    const { channelTitle, channelDescription, avatarUrl, bannerUrl, videoThumbnails, customUrl } = data;
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
       You are a branding expert and prompt engineer. Analyze the provided images (avatar, banner, video thumbnails) and text for this YouTube channel.
       Channel Title: ${channelTitle || 'N/A'}
       Channel Description: ${channelDescription || 'N/A'}
-      URL: youtube.com/@${channelTitle ? channelTitle.replace(/\s+/g, '') : 'handle'}
+      URL: youtube.com/${customUrl || '@' + (channelTitle ? channelTitle.replace(/\s+/g, '') : 'handle')}
       
       Extract the following information:
       1. 'primary_colors': A list of up to 3 hex color codes representing the channel's main brand colors.
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
          - Top Section: The exact text "${channelTitle}" written in a clean, modern, high-end sans-serif typography at the very top. DO NOT use reflections, 3D bevels, or 'WordArt' style effects. The text should look like a premium editorial magazine header.
          - Center Background: A stunning, photorealistic background relevant to the channel's topic and aesthetic.
          - Center Foreground: Thematic icons, tools, or adornments floating or framed around the center.
-         - Bottom Section: A concise 3-word tagline describing the channel (e.g. "REVIEWS. DRIVING. UNBOXING."), followed immediately under it by the exact text "youtube.com/@${channelTitle ? channelTitle.replace(/\s+/g, '') : 'channel'}".
+         - Bottom Section: A concise 3-word tagline describing the channel (e.g. "REVIEWS. DRIVING. UNBOXING."), followed immediately under it by the exact text "youtube.com/${customUrl || '@' + (channelTitle ? channelTitle.replace(/\s+/g, '') : 'channel')}".
          
          Do NOT repeat the channel title anywhere else in the poster. Ensure the layout matches a clean, premium, split-pane graphic design poster. Describe the cinematic lighting and aesthetic explicitly.
     `;
