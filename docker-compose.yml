@@ -15,11 +15,5 @@ services:
     # Volumes defined for persistent cache if required, not strictly necessary for this stateless app
     # volumes:
     #   - /mnt/user/appdata/youtube-poster-creator/.next:/app/.next
-    networks:
-      - proxy
 
-networks:
-  proxy:
-    external: true
-    name: proxy 
     # Use your Unraid reverse proxy network name here (e.g., proxynet, custom_bridge)
