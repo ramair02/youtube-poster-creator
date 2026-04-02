@@ -86,6 +86,29 @@ export default function PosterGenerator() {
     }
   };
 
+  const handleDownload = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!posterUrl) return;
+
+    try {
+      const res = await fetch(posterUrl);
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `${channelData?.channelTitle || 'youtube'}-poster.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err) {
+      console.error('Download failed:', err);
+      // Fallback
+      window.open(posterUrl, '_blank');
+    }
+  };
+
   const getStatusMessage = () => {
     switch (status) {
       case 'scraping': return 'Connecting to YouTube...';
@@ -213,10 +236,10 @@ export default function PosterGenerator() {
             <>
               <img src={posterUrl} alt="Generated Poster" className="w-full h-full object-cover rounded-2xl animate-float opacity-0 transition-opacity duration-1000" onLoad={(e) => e.currentTarget.classList.remove('opacity-0')} />
               <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col gap-4 items-center justify-center backdrop-blur-md rounded-3xl">
-                <a href={posterUrl} download={`${channelData?.channelTitle || 'youtube'}-poster.jpg`} target="_blank" rel="noreferrer" className="bg-white hover:bg-indigo-50 text-indigo-900 px-8 py-3 rounded-full font-bold shadow-2xl transition-all transform scale-95 group-hover:scale-100 flex items-center gap-3">
+                <button onClick={handleDownload} className="bg-white hover:bg-indigo-50 text-indigo-900 px-8 py-3 rounded-full font-bold shadow-2xl transition-all transform scale-95 group-hover:scale-100 flex items-center gap-3">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                   Download HQ Image
-                </a>
+                </button>
                 
                 <button onClick={handleRegenerate} disabled={status === 'generating'} className="bg-white/10 hover:bg-white/20 border border-white/20 text-white px-8 py-3 rounded-full font-bold shadow-lg transition-all transform scale-95 group-hover:scale-100 flex items-center gap-3">
                   <svg className={`w-5 h-5 ${status === 'generating' ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
