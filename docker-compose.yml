@@ -3,7 +3,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: youtube-poster-creator:latest
     container_name: youtube-poster-creator
     restart: unless-stopped
     ports:
