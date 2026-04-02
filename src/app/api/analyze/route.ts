@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     }
 
     const resolvedImages = await Promise.all(imagePromises);
-    const validImages = resolvedImages.filter(Boolean);
+    const validImages = resolvedImages.filter(Boolean) as { inlineData: { data: string; mimeType: string; }; }[];
 
     const promptText = `
       You are a branding expert and prompt engineer. Analyze the provided images (avatar, banner, video thumbnails) and text for this YouTube channel.
