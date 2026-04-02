@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  youtube-poster-creator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: youtube-poster-creator:latest
+    container_name: youtube-poster-creator
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - YOUTUBE_API_KEY=${YOUTUBE_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - REPLICATE_API_TOKEN=${REPLICATE_API_TOKEN}
+    # Volumes defined for persistent cache if required, not strictly necessary for this stateless app
+    # volumes:
+    #   - /mnt/user/appdata/youtube-poster-creator/.next:/app/.next
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
+    name: proxy 
+    # Use your Unraid reverse proxy network name here (e.g., proxynet, custom_bridge)
