@@ -72,13 +72,30 @@ export async function POST(req: NextRequest) {
       ...validImages
     ];
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: contents,
-      config: {
-        responseMimeType: "application/json",
+    const fallbackModels = ['gemini-2.5-flash', 'gemini-2.5-pro'];
+    let response: any = null;
+    let lastError: any = null;
+
+    for (const modelName of fallbackModels) {
+      try {
+        response = await ai.models.generateContent({
+          model: modelName,
+          contents: contents,
+          config: {
+            responseMimeType: "application/json",
+          }
+        });
+        // Break out as soon as a successful generation occurs
+        break;
+      } catch (err: any) {
+        console.warn(`[WARNING] Model ${modelName} failed (${err.status || err.message}). Trying next available model...`);
+        lastError = err;
       }
-    });
+    }
+
+    if (!response) {
+      throw lastError || new Error("All fallback models failed due to high demand or API issues.");
+    }
 
     const resultText = response.text || '';
     let parsedResult;
