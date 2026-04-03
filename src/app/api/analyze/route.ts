@@ -75,26 +75,42 @@ export async function POST(req: NextRequest) {
     const fallbackModels = ['gemini-2.5-flash', 'gemini-2.5-pro'];
     let response: any = null;
     let lastError: any = null;
+    const MAX_RETRIES_PER_MODEL = 3;
+    const RETRY_DELAY_MS = 2500;
+
+    const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
     for (const modelName of fallbackModels) {
-      try {
-        response = await ai.models.generateContent({
-          model: modelName,
-          contents: contents,
-          config: {
-            responseMimeType: "application/json",
+      for (let attempt = 1; attempt <= MAX_RETRIES_PER_MODEL; attempt++) {
+        try {
+          console.log(`[Gemini] Attempting generation with ${modelName} (Attempt ${attempt}/${MAX_RETRIES_PER_MODEL})...`);
+          response = await ai.models.generateContent({
+            model: modelName,
+            contents: contents,
+            config: {
+              responseMimeType: "application/json",
+            }
+          });
+          // Break out of retry loop as soon as a successful generation occurs
+          break;
+        } catch (err: any) {
+          lastError = err;
+          // Determine if we should retry (503 is UNAVAILABLE/High Demand)
+          if (err.status === 503 || err.message?.includes('503')) {
+             console.warn(`[WARNING] Model ${modelName} is at capacity (503). Retrying in ${RETRY_DELAY_MS}ms...`);
+             if (attempt < MAX_RETRIES_PER_MODEL) await sleep(RETRY_DELAY_MS);
+          } else {
+             console.warn(`[WARNING] Model ${modelName} failed with non-503 error (${err.status || err.message}). Skipping to next model...`);
+             break; // Break retry loop, move to next model
           }
-        });
-        // Break out as soon as a successful generation occurs
-        break;
-      } catch (err: any) {
-        console.warn(`[WARNING] Model ${modelName} failed (${err.status || err.message}). Trying next available model...`);
-        lastError = err;
+        }
       }
+      
+      if (response) break; // Break model loop if we got a response
     }
 
     if (!response) {
-      throw lastError || new Error("All fallback models failed due to high demand or API issues.");
+      throw lastError || new Error("All fallback models and retries failed due to high demand or API issues.");
     }
 
     const resultText = response.text || '';
