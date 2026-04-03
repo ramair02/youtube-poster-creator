@@ -75,15 +75,14 @@ export async function POST(req: NextRequest) {
     const fallbackModels = ['gemini-2.5-flash', 'gemini-2.5-pro'];
     let response: any = null;
     let lastError: any = null;
-    const MAX_RETRIES_PER_MODEL = 3;
-    const RETRY_DELAY_MS = 2500;
+    const RETRY_DELAYS_MS = [2000, 5000, 12000, 20000, 30000];
 
     const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
     for (const modelName of fallbackModels) {
-      for (let attempt = 1; attempt <= MAX_RETRIES_PER_MODEL; attempt++) {
+      for (let attempt = 0; attempt < RETRY_DELAYS_MS.length; attempt++) {
         try {
-          console.log(`[Gemini] Attempting generation with ${modelName} (Attempt ${attempt}/${MAX_RETRIES_PER_MODEL})...`);
+          console.log(`[Gemini] Attempting generation with ${modelName} (Attempt ${attempt + 1}/${RETRY_DELAYS_MS.length})...`);
           response = await ai.models.generateContent({
             model: modelName,
             contents: contents,
@@ -95,12 +94,13 @@ export async function POST(req: NextRequest) {
           break;
         } catch (err: any) {
           lastError = err;
-          // Determine if we should retry (503 is UNAVAILABLE/High Demand)
-          if (err.status === 503 || err.message?.includes('503')) {
-             console.warn(`[WARNING] Model ${modelName} is at capacity (503). Retrying in ${RETRY_DELAY_MS}ms...`);
-             if (attempt < MAX_RETRIES_PER_MODEL) await sleep(RETRY_DELAY_MS);
+          // Determine if we should retry (503 is UNAVAILABLE/High Demand or 429 Quota)
+          if (err.status === 503 || err.status === 429 || err.message?.includes('503') || err.message?.includes('429')) {
+             const delay = RETRY_DELAYS_MS[attempt];
+             console.warn(`[WARNING] Model ${modelName} is at capacity (${err.status}). Exponential backoff... retrying in ${delay}ms...`);
+             if (attempt < RETRY_DELAYS_MS.length - 1) await sleep(delay);
           } else {
-             console.warn(`[WARNING] Model ${modelName} failed with non-503 error (${err.status || err.message}). Skipping to next model...`);
+             console.warn(`[WARNING] Model ${modelName} failed with fatal error (${err.status || err.message}). Skipping to next model...`);
              break; // Break retry loop, move to next model
           }
         }
@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (!response) {
-      throw lastError || new Error("All fallback models and retries failed due to high demand or API issues.");
+      throw lastError || new Error("All fallback models and retries failed due to extreme high demand or API issues.");
     }
 
     const resultText = response.text || '';
